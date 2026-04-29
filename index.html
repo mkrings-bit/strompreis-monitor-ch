@@ -1021,6 +1021,18 @@ async function fetchFX() {
 }
 
 async function fetchPrices(dateStr) {
+  // Primär: eigener Netlify-Function-Proxy (kein Rate-Limit)
+  try {
+    const r = await fetch(`/api/prices?date=${dateStr}`, { cache: 'no-store' });
+    if (r.ok) {
+      const txt = (await r.text()).trim();
+      if (txt.startsWith('{')) {
+        const j = JSON.parse(txt);
+        if (j.price && j.unix_seconds) return j;
+      }
+    }
+  } catch {}
+  // Fallback: Third-Party-Proxies (für Tests via file:// oder bei Function-Ausfall)
   return fetchJSON(`https://api.energy-charts.info/price?bzn=CH&start=${dateStr}&end=${dateStr}`);
 }
 
