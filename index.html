@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strompreis-Monitor Schweiz · Alpen Energie</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface-2: #fafaf8;
+    --border: rgba(20, 30, 40, 0.08);
+    --border-strong: rgba(20, 30, 40, 0.14);
+    --text: #0f1729;
+    --text-2: #4b5563;
+    --text-3: #9ca3af;
+    --mint: #2fe39d;
+    --mint-2: #00d4a3;
+    --mint-dark: #0d3a2a;
+    --mint-bg: #ecfdf5;
+    --green: #10b981;
+    --green-bg: #d1fae5;
+    --yellow: #f59e0b;
+    --yellow-bg: #fef3c7;
+    --red: #ef4444;
+    --red-bg: #fee2e2;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 41, 0.04);
+    --shadow: 0 4px 16px rgba(15, 23, 41, 0.06);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { background: var(--bg); }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 28px 28px 60px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container { max-width: min(96vw, 1720px); margin: 0 auto; }
+
+  /* ─────────── Header ─────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-logo {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--mint) 0%, var(--mint-2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--mint-dark);
+    font-size: 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .brand h1 {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .brand p {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .clock {
+    font-variant-numeric: tabular-nums;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .clock-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--mint-2);
+    box-shadow: 0 0 0 4px rgba(0, 212, 163, 0.18);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.85); }
+  }
+  .reload-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .reload-btn:hover { border-color: var(--mint-2); color: var(--mint-dark); }
+
+  /* ─────────── Hero current price ─────────── */
+  .hero {
+    background: linear-gradient(135deg, var(--mint-dark) 0%, #0a4d3a 100%);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    color: white;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(47, 227, 157, 0.25), transparent 60%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin-bottom: 8px;
+  }
+  .hero-price {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-price .unit {
+    font-size: 20px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
+  .hero-breakdown {
+    margin-top: 14px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    display: flex; flex-wrap: wrap; gap: 8px 14px;
+  }
+  .hero-breakdown span strong { color: white; font-weight: 600; }
+  .hero-time {
+    text-align: right;
+    z-index: 1;
+  }
+  .hero-time-big {
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-time-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  @media (max-width: 720px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-time { text-align: left; }
+    .hero-price { font-size: 44px; }
+  }
+
+  /* ─────────── Toggle ─────────── */
+  .toggle-row {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .toggle {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: var(--shadow-sm);
+  }
+  .toggle button {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .toggle button.active {
+    background: var(--mint-dark);
+    color: white;
+    box-shadow: var(--shadow-sm);
+  }
+  .toggle-hint { font-size: 12px; color: var(--text-3); }
+
+  /* ─────────── Config grid ─────────── */
+  .config {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 880px) { .config { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .config { grid-template-columns: 1fr; } }
+  .field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .field-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .field-value-row { display: flex; align-items: baseline; gap: 6px; }
+  .field input[type="text"], .field input[type="number"] {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 600;
+    width: 100%;
+    padding: 0;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .field input:focus { outline: none; }
+  .field-suffix { font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .field-sub {
+    font-size: 11.5px;
+    color: var(--text-2);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .field-sub strong { color: var(--text); font-weight: 600; }
+
+  /* ─────────── Stats ─────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-value .unit { font-size: 12px; color: var(--text-2); font-weight: 500; margin-left: 3px; }
+  .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .stat.green .stat-value { color: var(--green); }
+  .stat.red .stat-value { color: var(--red); }
+
+  /* ─────────── Section ─────────── */
+  section { margin-bottom: 28px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  }
+  .section-head h2 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .section-head h2 .day { color: var(--text-3); font-weight: 500; margin-left: 8px; font-size: 14px; }
+  .section-head .meta { font-size: 12px; color: var(--text-2); font-weight: 500; }
+
+  /* ─────────── Chart ─────────── */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .chart-bars {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 4px;
+    align-items: end;
+    height: 220px;
+    margin-bottom: 8px;
+    padding: 4px 0;
+  }
+  .bar-wrap {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    cursor: pointer;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 6px 6px 2px 2px;
+    transition: opacity 0.15s, transform 0.15s;
+    min-height: 2px;
+    background: var(--green);
+  }
+  .bar.green { background: linear-gradient(180deg, var(--green) 0%, #059669 100%); }
+  .bar.yellow { background: linear-gradient(180deg, var(--yellow) 0%, #d97706 100%); }
+  .bar.red { background: linear-gradient(180deg, var(--red) 0%, #dc2626 100%); }
+  .bar.now {
+    box-shadow: 0 0 0 3px var(--mint), 0 0 0 4px var(--mint-dark);
+    transform: scaleY(1.02);
+    transform-origin: bottom;
+  }
+  .bar-wrap:hover .bar { opacity: 0.78; }
+  .bar-now-marker {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--mint-dark);
+    color: white;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .bar-now-marker::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%; transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--mint-dark);
+  }
+  .chart-axis {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-3);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .chart-axis div { overflow: hidden; }
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 20;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    line-height: 1.4;
+  }
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+  }
+  .tooltip-time { font-weight: 700; color: var(--mint); margin-bottom: 2px; }
+  .tooltip-price { font-weight: 600; }
+  .tooltip-sub { font-size: 10.5px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .bar-wrap:hover .tooltip { opacity: 1; }
+
+  /* ─────────── Chart Tabs (Balken/Linie) ─────────── */
+  .chart-tabs {
+    display: inline-flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 3px;
+  }
+  .chart-tabs button {
+    background: transparent; border: none;
+    padding: 6px 13px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .chart-tabs button.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ─────────── Line Chart (SVG) — Premium ─────────── */
+  .chart-line { width: 100%; height: clamp(280px, 24vw, 380px); display: block; overflow: visible; }
+  .chart-line .chart-bg { fill: url(#chartBgGrad); }
+  .chart-line .grid-line { stroke: rgba(15, 23, 41, 0.05); stroke-width: 1; }
+  .chart-line .grid-line.major { stroke: rgba(15, 23, 41, 0.08); }
+  .chart-line .axis-label { font-size: 11px; fill: var(--text-3); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  .chart-line .axis-label.y { font-size: 10.5px; }
+  .chart-line .price-line { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  .chart-line .price-line-glow { fill: none; stroke-width: 8; stroke-linejoin: round; stroke-linecap: round; opacity: 0.18; filter: blur(4px); }
+  .chart-line .data-dot { stroke: white; stroke-width: 1.8; opacity: 0.85; }
+  .chart-line .ref-line { stroke-dasharray: 3 5; stroke-width: 1.2; opacity: 0.7; }
+  .chart-line .ref-line.avg { stroke: var(--text-3); stroke-dasharray: 2 4; }
+  .chart-line .ref-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; }
+  .chart-line .ref-label.avg { fill: var(--text-3); }
+  .chart-line .now-line { stroke: var(--mint-dark); stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0.5; }
+  .chart-line .now-dot-outer {
+    fill: var(--mint);
+    opacity: 0.35;
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: nowPulse 2.4s ease-in-out infinite;
+  }
+  .chart-line .now-dot { fill: var(--mint-dark); stroke: white; stroke-width: 3; }
+  @keyframes nowPulse {
+    0%, 100% { transform: scale(1); opacity: 0.35; }
+    50% { transform: scale(1.6); opacity: 0; }
+  }
+  .chart-line .hover-dot { fill: var(--mint-dark); stroke: white; stroke-width: 2.5; opacity: 0; transition: opacity 0.12s; pointer-events: none; r: 6; }
+  .chart-line .hover-line { stroke: var(--text); stroke-width: 1; stroke-dasharray: 2 4; opacity: 0; transition: opacity 0.12s; pointer-events: none; }
+  .chart-line .hot-zone { fill: transparent; cursor: crosshair; }
+  .chart-line .now-pill {
+    fill: var(--mint-dark);
+    filter: drop-shadow(0 2px 6px rgba(13, 58, 42, 0.25));
+  }
+  .chart-line .now-pill-text {
+    fill: white;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-anchor: middle;
+  }
+  .chart-line .price-line-anim { stroke-dasharray: 3000; stroke-dashoffset: 3000; animation: drawPath 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes drawPath {
+    to { stroke-dashoffset: 0; }
+  }
+  .chart-line .data-dot-anim { opacity: 0; animation: fadeInDot 0.4s ease-out forwards; }
+  @keyframes fadeInDot {
+    to { opacity: 0.85; }
+  }
+
+  /* Annotation pills (Min / Max) */
+  .chart-line .anno-pill { filter: drop-shadow(0 2px 4px rgba(15, 23, 41, 0.15)); }
+  .chart-line .anno-pill-bg { fill: white; stroke-width: 1.5; }
+  .chart-line .anno-pill-bg.min { stroke: var(--green); }
+  .chart-line .anno-pill-bg.max { stroke: var(--red); }
+  .chart-line .anno-pill-text {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-anchor: middle;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .chart-line .anno-pill-text.min { fill: var(--green); }
+  .chart-line .anno-pill-text.max { fill: var(--red); }
+  .chart-line .anno-leader { stroke-width: 1.2; stroke-dasharray: 2 3; }
+  .chart-line .anno-leader.min { stroke: var(--green); opacity: 0.5; }
+  .chart-line .anno-leader.max { stroke: var(--red); opacity: 0.5; }
+  .chart-line .anno-target { stroke: white; stroke-width: 2.5; }
+  .chart-line .anno-target.min { fill: var(--green); }
+  .chart-line .anno-target.max { fill: var(--red); }
+
+  /* Cheap window highlight */
+  .chart-line .cheap-band { fill: var(--green); opacity: 0.07; }
+  .chart-line .cheap-band-border { fill: none; stroke: var(--green); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.6; }
+  .chart-line .cheap-band-label {
+    font-size: 10px;
+    font-weight: 700;
+    fill: #047857;
+    letter-spacing: 0.05em;
+    text-anchor: middle;
+  }
+
+  /* Day/Night background bands */
+  .chart-line .night-band { fill: rgba(15, 23, 41, 0.025); }
+  .line-tooltip {
+    position: absolute;
+    background: var(--text);
+    color: white;
+    border-radius: 8px;
+    padding: 8px 11px;
+    font-size: 11.5px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    z-index: 20;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    line-height: 1.4;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
+  }
+  .line-tooltip::after {
+    content: ''; position: absolute;
+    top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--text);
+  }
+  .line-tooltip-time { font-weight: 700; color: var(--mint); margin-bottom: 2px; }
+  .line-tooltip-price { font-weight: 600; }
+  .line-tooltip-sub { font-size: 10.5px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .chart-line-wrap { position: relative; }
+
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    font-size: 11.5px; color: var(--text-2);
+    margin-top: 14px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ─────────── Insights ─────────── */
+  .insights {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 720px) { .insights { grid-template-columns: 1fr; } }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .insight-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .insight-title.green { color: var(--green); }
+  .insight-title.red { color: var(--red); }
+  .insight-list { list-style: none; }
+  .insight-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 12px;
+    border-radius: 9px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .insight-list.green li { background: var(--green-bg); }
+  .insight-list.red li { background: var(--red-bg); }
+  .insight-time { font-weight: 600; color: var(--text); }
+  .insight-price-spot { color: var(--text-2); font-size: 11.5px; }
+  .insight-list.green .insight-price { color: var(--green); font-weight: 700; }
+  .insight-list.red .insight-price { color: var(--red); font-weight: 700; }
+
+  /* ─────────── Talking points ─────────── */
+  .talking {
+    background: linear-gradient(135deg, var(--mint-bg) 0%, #f0fdf4 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .talking-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--mint-dark);
+    color: var(--mint);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .talking-content { flex: 1; font-size: 13.5px; line-height: 1.55; color: var(--mint-dark); }
+  .talking-content strong {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  /* ─────────── Empty / error ─────────── */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-3);
+    font-size: 13.5px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    line-height: 1.6;
+  }
+  .error {
+    background: var(--red-bg);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+
+  /* ─────────── Footer ─────────── */
+  footer {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 11.5px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    line-height: 1.7;
+  }
+  footer a { color: var(--text-2); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">⚡</div>
+      <div>
+        <h1>Strompreis-Monitor Schweiz</h1>
+        <p>EPEX Spot · Day-Ahead · Berater-Tool Alpen Energie</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="clock"><div class="clock-dot"></div><span id="liveClock">--:--:--</span></div>
+      <button class="reload-btn" onclick="loadAll()">↻ Aktualisieren</button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div>
+      <div class="hero-label">Aktueller Preis · jetzt</div>
+      <div class="hero-price"><span id="heroPrice">—</span><span class="unit">Rp/kWh</span></div>
+      <div class="hero-breakdown" id="heroBreakdown">
+        <span>Lädt …</span>
+      </div>
+    </div>
+    <div class="hero-time">
+      <div class="hero-time-big" id="heroHour">--:--</div>
+      <div class="hero-time-sub" id="heroDay">—</div>
+    </div>
+  </div>
+
+  <!-- Toggle -->
+  <div class="toggle-row">
+    <div class="toggle" id="viewToggle">
+      <button data-mode="endkunde" class="active">Endkundenpreis</button>
+      <button data-mode="spot">Nur Spot (Börse)</button>
+    </div>
+    <span class="toggle-hint">Endkunde = Spot + Netzentgelt + Abgaben + MwSt 8.1 %</span>
+  </div>
+
+  <!-- Config -->
+  <div class="config">
+    <div class="field">
+      <div class="field-label">Postleitzahl</div>
+      <input id="plz" type="text" inputmode="numeric" maxlength="4" placeholder="8001">
+      <div class="field-sub" id="plzSub">PLZ eingeben für Versorger &amp; Tarif</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Versorger / Region</div>
+      <div id="versorger" style="font-size:14.5px; font-weight:600; line-height:1.35; min-height:42px;">
+        <span style="color: var(--text-3); font-weight: 500;">—</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Netzentgelt <span style="color:var(--text-3); font-weight:600;">H4</span></div>
+      <div class="field-value-row">
+        <input id="netz" type="number" step="0.5" min="0" max="30" value="10.5">
+        <span class="field-suffix">Rp/kWh</span>
+      </div>
+      <div class="field-sub">Netznutzung Haushalt · ElCom 2026</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Abgaben &amp; KEV</div>
+      <div class="field-value-row">
+        <input id="abgaben" type="number" step="0.1" min="0" max="10" value="2.3">
+        <span class="field-suffix">Rp/kWh</span>
+      </div>
+      <div class="field-sub">Bundesabgabe + Netzzuschlag</div>
+    </div>
+  </div>
+
+  <div id="errorBox"></div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Jetzt</div><div class="stat-value" id="statNow">—</div><div class="stat-sub" id="statNowSub">—</div></div>
+    <div class="stat green"><div class="stat-label">Tagestief</div><div class="stat-value" id="statMin">—</div><div class="stat-sub" id="statMinSub">—</div></div>
+    <div class="stat red"><div class="stat-label">Tageshoch</div><div class="stat-value" id="statMax">—</div><div class="stat-sub" id="statMaxSub">—</div></div>
+    <div class="stat"><div class="stat-label">Ø Tag</div><div class="stat-value" id="statAvg">—</div><div class="stat-sub" id="statAvgSub">—</div></div>
+  </div>
+
+  <!-- Today chart -->
+  <section>
+    <div class="section-head">
+      <h2>Heute<span class="day" id="todayDate"></span></h2>
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <span class="meta" id="todayMeta">24h Stundenpreise</span>
+        <div class="chart-tabs" data-target="today">
+          <button data-view="line" class="active">⌇ Linie</button>
+          <button data-view="bars">▌ Balken</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-line-wrap" id="todayLineWrap">
+        <svg class="chart-line" id="todayLine" viewBox="0 0 720 260" preserveAspectRatio="none"></svg>
+        <div class="line-tooltip" id="todayLineTip"></div>
+      </div>
+      <div class="chart-bars" id="todayBars" style="display:none;"></div>
+      <div class="chart-axis" id="todayAxis" style="display:none;"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background: var(--green)"></div>Günstig (≤ 33%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--yellow)"></div>Normal</div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--red)"></div>Teuer (≥ 67%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--mint-dark); box-shadow: 0 0 0 2px var(--mint);"></div>Aktuelle Stunde</div>
+      </div>
+    </div>
+  </section>
+
+  <div id="talkingBox"></div>
+
+  <!-- Insights -->
+  <div class="insights">
+    <div class="insight-card">
+      <div class="insight-title green">⬇ Top 3 günstigste Stunden heute</div>
+      <ul class="insight-list green" id="cheapest"></ul>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title red">⬆ Top 3 teuerste Stunden heute</div>
+      <ul class="insight-list red" id="expensive"></ul>
+    </div>
+  </div>
+
+  <!-- Tomorrow chart -->
+  <section>
+    <div class="section-head">
+      <h2>Morgen<span class="day" id="tomorrowDate"></span></h2>
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <span class="meta" id="tomorrowMeta">Veröffentlichung ~13:00 CET</span>
+        <div class="chart-tabs" data-target="tomorrow">
+          <button data-view="line" class="active">⌇ Linie</button>
+          <button data-view="bars">▌ Balken</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-line-wrap" id="tomorrowLineWrap">
+        <svg class="chart-line" id="tomorrowLine" viewBox="0 0 720 260" preserveAspectRatio="none" style="display:none;"></svg>
+        <div class="line-tooltip" id="tomorrowLineTip"></div>
+      </div>
+      <div class="chart-bars" id="tomorrowBars" style="display:none;"></div>
+      <div class="chart-axis" id="tomorrowAxis" style="display:none;"></div>
+      <div id="tomorrowEmpty" class="empty">
+        <strong>Preise für morgen sind noch nicht verfügbar</strong><br>
+        Die EPEX Spot publiziert die Day-Ahead-Preise täglich gegen 13:00 Uhr CET.<br>
+        <span style="opacity:0.7;">Einfach nach 13 Uhr "Aktualisieren" drücken.</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <strong>Datenquellen:</strong>
+    <a href="https://api.energy-charts.info/" target="_blank">energy-charts.info</a> (Fraunhofer ISE) · EPEX Spot Day-Ahead · Bidding Zone CH ·
+    Wechselkurs <a href="https://open.er-api.com/" target="_blank">open.er-api.com</a><br>
+    Endkundenpreise sind kalkulatorische Richtwerte (Netzentgelt + Abgaben + 8.1 % MwSt). Tatsächlicher Tarif kann je nach Versorger und Tarifmodell abweichen.<br>
+    <span style="opacity:0.7;">Auto-Refresh alle 5 Minuten · Alpen Energie GmbH · enura-group.com</span>
+  </footer>
+
+</div>
+
+<script>
+// =============================================================
+//   PLZ → Versorger + Netzentgelt-Default (CH, ~80 Bereiche)
+//   Netzentgelt-Werte sind ElCom-Schätzwerte 2026 für H4 Haushalt
+// =============================================================
+const PLZ_DATA = [
+  // [min, max, kt, vers, region, netz_rp_kwh]
+  [1000, 1099, "VD", "Romande Energie / SIL", "Lausanne &amp; Region", 11.2],
+  [1100, 1199, "VD", "Romande Energie", "Waadt West", 11.2],
+  [1200, 1299, "GE", "SIG (Services Industriels Genève)", "Genf", 9.8],
+  [1300, 1399, "VD", "Romande Energie", "Waadt", 11.2],
+  [1400, 1499, "VD", "Romande Energie", "Yverdon &amp; Region", 11.2],
+  [1500, 1599, "VD", "Romande Energie / Groupe E", "Broye", 11.0],
+  [1600, 1699, "FR", "Groupe E", "Freiburg/Greyerz", 10.8],
+  [1700, 1799, "FR", "Groupe E", "Fribourg", 10.8],
+  [1800, 1899, "VD", "Romande Energie", "Riviera Vaudoise", 11.2],
+  [1900, 1999, "VS", "Oiken / ESR / Sinergy", "Wallis Mitte/Unterwallis", 10.5],
+  [2000, 2099, "NE", "Viteos", "Neuchâtel", 11.4],
+  [2100, 2199, "NE", "Groupe E / Viteos", "Val-de-Travers", 11.0],
+  [2300, 2399, "NE", "Viteos", "La Chaux-de-Fonds", 11.4],
+  [2500, 2599, "BE", "ESB Energie Service Biel/Bienne", "Biel/Bienne", 10.6],
+  [2600, 2699, "BE/JU", "BKW / SED", "Berner Jura / Jura", 10.8],
+  [2700, 2799, "BE/JU", "BKW / SED", "Moutier / Jura", 10.8],
+  [2800, 2899, "JU", "SED Société Electrique du Jura", "Delémont", 11.5],
+  [2900, 2999, "JU", "SED / FMB", "Pruntrut", 11.5],
+  [3000, 3099, "BE", "ewb (Energie Wasser Bern)", "Bern Stadt", 9.6],
+  [3100, 3199, "BE", "BKW", "Bern Land", 10.8],
+  [3200, 3299, "BE", "BKW / Onyx", "Seeland", 10.8],
+  [3300, 3399, "BE", "BKW / onyx Energie", "Burgdorf/Emmental", 10.8],
+  [3400, 3499, "BE", "Onyx Energie / BKW", "Burgdorf", 10.6],
+  [3500, 3599, "BE", "BKW", "Konolfingen/Schwarzenburg", 10.8],
+  [3600, 3699, "BE", "BKW / Energie Thun", "Thun", 10.4],
+  [3700, 3899, "BE", "BKW / Licht- und Wasserwerk", "Berner Oberland", 10.8],
+  [3900, 3999, "VS", "EnAlpin / OIE", "Oberwallis", 10.5],
+  [4000, 4099, "BS", "IWB Industrielle Werke Basel", "Basel-Stadt", 12.4],
+  [4100, 4299, "BL", "EBM / EBL", "Baselland", 11.2],
+  [4300, 4399, "AG/BL", "AEW / EBM", "Fricktal", 10.8],
+  [4400, 4499, "BL", "EBL Genossenschaft", "Liestal", 11.0],
+  [4500, 4599, "SO", "AEK / Regio Energie Solothurn", "Solothurn", 10.6],
+  [4600, 4699, "SO", "AEK", "Olten", 10.6],
+  [4700, 4799, "SO/BL", "AEK / EBM", "Schwarzbubenland", 10.8],
+  [4800, 4899, "AG", "StWZ Energie / onyx", "Zofingen", 10.4],
+  [4900, 4999, "BE/SO", "BKW / AEK", "Langenthal", 10.6],
+  [5000, 5099, "AG", "AEW Energie / IBAarau", "Aarau", 9.8],
+  [5100, 5299, "AG", "AEW Energie", "Brugg/Wettingen", 10.0],
+  [5300, 5499, "AG", "AEW Energie", "Aargau Süd", 10.0],
+  [5500, 5699, "AG", "AEW Energie", "Lenzburg", 10.0],
+  [5700, 5799, "AG", "AEW / SWL Lenzburg", "Wynental", 10.0],
+  [5800, 5899, "AG", "AEW Energie", "Reinach", 10.0],
+  [5900, 5999, "AG", "AEW Energie", "Aarau Land", 10.0],
+  [6000, 6099, "LU", "ewl Energie Wasser Luzern", "Luzern Stadt", 9.4],
+  [6100, 6199, "LU", "CKW Centralschweiz. Kraftwerke", "Luzern Land", 11.6],
+  [6200, 6299, "LU", "CKW", "Sursee", 11.6],
+  [6300, 6399, "ZG", "WWZ Wasserwerke Zug", "Zug", 9.2],
+  [6400, 6499, "SZ", "EBS Elektrizitätswerk Bezirk Schwyz", "Schwyz", 10.4],
+  [6500, 6599, "TI", "AET / SES", "Bellinzona", 11.0],
+  [6600, 6699, "TI", "AEM / OFIBLE", "Locarno", 11.0],
+  [6700, 6799, "TI", "AET", "Faido/Olivone", 11.0],
+  [6800, 6899, "TI", "AGE Mendrisio", "Mendrisio", 10.6],
+  [6900, 6999, "TI", "AIL / AEM", "Lugano", 10.6],
+  [7000, 7099, "GR", "IBC Energie Wasser Chur", "Chur", 10.4],
+  [7100, 7299, "GR", "Repower / EW", "Domleschg/Heinzenberg", 11.8],
+  [7300, 7399, "GR", "EW Davos / Repower", "Prättigau", 11.4],
+  [7400, 7499, "GR", "EWA / Repower", "Hinterrhein", 11.6],
+  [7500, 7599, "GR", "EE Engadina / ewz", "Oberengadin", 11.0],
+  [7600, 7699, "GR", "Repower", "Puschlav/Bergell", 12.0],
+  [7700, 7799, "GR", "EWP/Repower", "Misox/Calanca", 11.8],
+  [7800, 7899, "GR", "EWA/Repower", "Davos/Klosters", 11.4],
+  [8000, 8099, "ZH", "ewz Elektrizitätswerk der Stadt Zürich", "Zürich Stadt", 8.4],
+  [8100, 8199, "ZH", "EKZ Elektrizitätswerke Kanton Zürich", "Furttal/Limmattal", 9.8],
+  [8200, 8299, "SH", "SH POWER / EKS", "Schaffhausen", 10.2],
+  [8300, 8399, "ZH", "EKZ", "Glattal", 9.8],
+  [8400, 8499, "ZH", "Stadtwerk Winterthur", "Winterthur", 9.2],
+  [8500, 8599, "TG", "EKT / Werke am Zürichsee", "Frauenfeld/Thurgau West", 10.4],
+  [8600, 8699, "ZH", "EKZ / EWZ Wetzikon", "Oberland Zürich", 9.8],
+  [8700, 8799, "ZH/SZ", "EKZ / EW Höfe", "Pfäffikon/Wollerau", 10.0],
+  [8800, 8899, "SZ/ZH", "EBS / EW Wädenswil", "March/Höfe", 10.2],
+  [8900, 8999, "ZH", "EKZ", "Affoltern", 9.8],
+  [9000, 9099, "SG", "St.Galler Stadtwerke (sgsw)", "St. Gallen Stadt", 9.6],
+  [9100, 9199, "SG", "SAK / WEG", "Herisau/AR", 11.2],
+  [9200, 9299, "TG", "EKT / SAK", "Gossau/Untertoggenburg", 10.6],
+  [9300, 9399, "SG", "SAK / Stadtwerke Wil", "Wil", 10.8],
+  [9400, 9499, "SG", "SAK / EW Goldach", "Rorschach", 10.8],
+  [9500, 9599, "TG/SG", "EKT / SAK / Stadtwerke Wil", "Wil/Toggenburg", 10.6],
+  [9600, 9799, "SG", "SAK", "Toggenburg/Werdenberg", 11.2],
+  [9800, 9999, "GR/SG", "Repower / SAK", "Werdenberg/Sarganserland", 11.4]
+];
+
+const MWST = 1.081; // 8.1 % CH MwSt seit 2024
+const FX_FALLBACK = 0.93;
+
+// =============================================================
+//   State
+// =============================================================
+const state = {
+  fx: FX_FALLBACK,
+  todaySpot: new Array(24).fill(null),   // Rp/kWh, Spot only
+  tomorrowSpot: new Array(24).fill(null),
+  netz: 10.5,
+  abgaben: 2.3,
+  mode: 'endkunde',  // oder 'spot'
+  view: { today: 'line', tomorrow: 'line' },  // 'line' oder 'bars'
+};
+
+// =============================================================
+//   Helpers
+// =============================================================
+function lookupPLZ(plz) {
+  const n = parseInt(plz, 10);
+  if (isNaN(n) || plz.length < 4) return null;
+  for (const row of PLZ_DATA) {
+    if (n >= row[0] && n <= row[1]) {
+      return { kt: row[2], vers: row[3], region: row[4], netz: row[5] };
+    }
+  }
+  return null;
+}
+
+function isoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('de-CH', { weekday: 'long', day: '2-digit', month: 'long' });
+}
+
+function fmtRp(p, decimals = 2) {
+  return p == null ? '—' : p.toFixed(decimals);
+}
+
+function quantile(sorted, q) {
+  const idx = (sorted.length - 1) * q;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+// Spot Rp/kWh → Endkunde Rp/kWh
+function toEndkunde(spotRp) {
+  if (spotRp == null) return null;
+  return (spotRp + state.netz + state.abgaben) * MWST;
+}
+
+function getDisplayPrice(spotRp) {
+  return state.mode === 'spot' ? spotRp : toEndkunde(spotRp);
+}
+
+function getDisplayArr(spotArr) {
+  return spotArr.map(getDisplayPrice);
+}
+
+// =============================================================
+//   Fetch (Proxy-Kette für CORS bei file:// Origin)
+// =============================================================
+async function fetchJSON(url) {
+  const candidates = [
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  ];
+  let lastErr;
+  for (const u of candidates) {
+    try {
+      const r = await fetch(u, { cache: 'no-store' });
+      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+      const txt = (await r.text()).trim();
+      if (txt.startsWith('<')) { lastErr = new Error('HTML statt JSON'); continue; }
+      return JSON.parse(txt);
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Alle Endpunkte fehlgeschlagen');
+}
+
+async function fetchFX() {
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/EUR', { cache: 'no-store' });
+    if (!r.ok) return FX_FALLBACK;
+    const j = await r.json();
+    return j.rates?.CHF || FX_FALLBACK;
+  } catch { return FX_FALLBACK; }
+}
+
+async function fetchPrices(dateStr) {
+  return fetchJSON(`https://api.energy-charts.info/price?bzn=CH&start=${dateStr}&end=${dateStr}`);
+}
+
+// =============================================================
+//   Render
+// =============================================================
+function classify(p, q33, q67) {
+  if (p <= q33) return 'green';
+  if (p >= q67) return 'red';
+  return 'yellow';
+}
+
+// Curated 5-stop palette (cheap → expensive) — harmonisch abgestimmt
+const PALETTE = [
+  { t: 0.00, r:  52, g: 211, b: 153 },  // mint #34d399
+  { t: 0.28, r: 134, g: 239, b: 172 },  // light green #86efac
+  { t: 0.50, r: 250, g: 204,  b: 21 },  // gold #facc15
+  { t: 0.74, r: 251, g: 146,  b: 60 },  // orange #fb923c
+  { t: 1.00, r: 239, g:  68,  b: 68 },  // coral red #ef4444
+];
+function priceToColor(p, minP, maxP) {
+  const t = Math.min(1, Math.max(0, (p - minP) / Math.max(maxP - minP, 0.001)));
+  // find segment
+  let lo = PALETTE[0], hi = PALETTE[PALETTE.length - 1];
+  for (let i = 0; i < PALETTE.length - 1; i++) {
+    if (t >= PALETTE[i].t && t <= PALETTE[i+1].t) { lo = PALETTE[i]; hi = PALETTE[i+1]; break; }
+  }
+  const range = hi.t - lo.t || 1;
+  const f = (t - lo.t) / range;
+  const r = Math.round(lo.r + (hi.r - lo.r) * f);
+  const g = Math.round(lo.g + (hi.g - lo.g) * f);
+  const b = Math.round(lo.b + (hi.b - lo.b) * f);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// SVG line chart — Premium Tibber-Style
+function renderLineChart(svgId, tipId, hourly, currentHour, spotArr) {
+  const svg = document.getElementById(svgId);
+  const tip = document.getElementById(tipId);
+  if (!svg) return;
+
+  const valid = hourly.filter(p => p != null);
+  if (valid.length === 0) {
+    svg.innerHTML = '';
+    svg.style.display = 'none';
+    return;
+  }
+  svg.style.display = 'block';
+
+  // ─── Misst die ECHTE SVG-Element-Größe im DOM (nach finalem Layout)
+  const svgRect0 = svg.getBoundingClientRect();
+  const W = Math.max(400, Math.round(svgRect0.width || svg.parentElement.getBoundingClientRect().width || 720));
+  const H = Math.max(260, Math.round(svgRect0.height || 320));
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio', 'none'); // viewBox = Pixelgröße → 1:1 ohne Scaling
+
+  const padL = 38, padR = 14, padT = 30, padB = 36;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const sorted = [...valid].sort((a, b) => a - b);
+  const minP = sorted[0];
+  const maxP = sorted[sorted.length - 1];
+  const range = Math.max(maxP - minP, 0.5);
+  const yMin = minP - range * 0.15;
+  const yMax = maxP + range * 0.22;
+  const yRange = yMax - yMin;
+  const q33 = quantile(sorted, 0.33);
+  const q67 = quantile(sorted, 0.67);
+  const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
+
+  const xFor = (h) => padL + (h / 23) * innerW;
+  const yFor = (p) => padT + innerH - ((p - yMin) / yRange) * innerH;
+
+  // Points — fill missing hours via linear interpolation between neighbors
+  const points = [];
+  for (let h = 0; h < 24; h++) {
+    const p = hourly[h];
+    if (p != null) points.push({ x: xFor(h), y: yFor(p), h, p });
+  }
+
+  // Smooth Catmull-Rom path
+  function smoothPath(pts) {
+    if (pts.length === 0) return '';
+    if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+    let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const t = 0.2;
+      const c1x = p1.x + (p2.x - p0.x) * t;
+      const c1y = p1.y + (p2.y - p0.y) * t;
+      const c2x = p2.x - (p3.x - p1.x) * t;
+      const c2y = p2.y - (p3.y - p1.y) * t;
+      d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const linePath = smoothPath(points);
+  const baselineY = padT + innerH;
+  const fillPath = points.length > 0
+    ? linePath + ` L ${points[points.length-1].x.toFixed(1)} ${baselineY} L ${points[0].x.toFixed(1)} ${baselineY} Z`
+    : '';
+
+  // ─── Build price-aware horizontal gradient (color follows price level)
+  const grad = svgId + '-grad';
+  const gradFill = svgId + '-fill';
+  const gradBg = svgId + '-bg';
+
+  // Stops at each data point's x position
+  const lineStops = points.map(pt => {
+    const offset = ((pt.x - padL) / innerW * 100).toFixed(2);
+    const color = priceToColor(pt.p, minP, maxP);
+    return `<stop offset="${offset}%" stop-color="${color}"/>`;
+  }).join('');
+  const fillStops = points.map(pt => {
+    const offset = ((pt.x - padL) / innerW * 100).toFixed(2);
+    const color = priceToColor(pt.p, minP, maxP);
+    return `<stop offset="${offset}%" stop-color="${color}"/>`;
+  }).join('');
+
+  let svgHTML = `
+    <defs>
+      <linearGradient id="${grad}" x1="${padL}" y1="0" x2="${padL + innerW}" y2="0" gradientUnits="userSpaceOnUse">
+        ${lineStops}
+      </linearGradient>
+      <linearGradient id="${gradFill}-color" x1="${padL}" y1="0" x2="${padL + innerW}" y2="0" gradientUnits="userSpaceOnUse">
+        ${fillStops}
+      </linearGradient>
+      <linearGradient id="${gradFill}-alpha" x1="0" y1="${padT}" x2="0" y2="${baselineY}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="white" stop-opacity="0.55"/>
+        <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <mask id="${gradFill}-mask">
+        <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="url(#${gradFill}-alpha)"/>
+      </mask>
+      <linearGradient id="${gradBg}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fafaf8" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#f5f5f3" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="${svgId}-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>`;
+
+  // ─── Soft chart background
+  svgHTML += `<rect class="chart-bg" x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="url(#${gradBg})" rx="8"/>`;
+
+  // ─── Subtle Night/Day bands (00-06 night, 22-24 night)
+  const nightW1 = (6 / 24) * innerW;
+  const nightX2 = padL + (22 / 24) * innerW;
+  const nightW2 = (2 / 24) * innerW;
+  svgHTML += `<rect class="night-band" x="${padL}" y="${padT}" width="${nightW1.toFixed(1)}" height="${innerH}" rx="4"/>`;
+  svgHTML += `<rect class="night-band" x="${nightX2.toFixed(1)}" y="${padT}" width="${nightW2.toFixed(1)}" height="${innerH}" rx="4"/>`;
+
+  // ─── "Nächstes günstiges Fenster" — finde längste Folge von ≤ q33 Stunden ab jetzt
+  if (currentHour >= 0) {
+    let bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+    for (let h = currentHour; h < 24; h++) {
+      if (hourly[h] != null && hourly[h] <= q33) {
+        if (curStart === -1) curStart = h;
+        curLen++;
+        if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+      } else {
+        curStart = -1; curLen = 0;
+      }
+    }
+    if (bestLen >= 2) {
+      const bx = xFor(bestStart);
+      const bxEnd = xFor(Math.min(23, bestStart + bestLen - 1)) + (innerW / 23);
+      const bw = bxEnd - bx;
+      svgHTML += `<rect class="cheap-band" x="${bx.toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${innerH}" rx="6"/>`;
+      svgHTML += `<rect class="cheap-band-border" x="${(bx+1).toFixed(1)}" y="${(padT+1).toFixed(1)}" width="${(bw-2).toFixed(1)}" height="${(innerH-2).toFixed(1)}" rx="6"/>`;
+      const labelX = bx + bw / 2;
+      svgHTML += `<text class="cheap-band-label" x="${labelX.toFixed(1)}" y="${(padT + 16).toFixed(1)}">⬇ GÜNSTIG · ${String(bestStart).padStart(2,'0')}-${String((bestStart+bestLen)%24).padStart(2,'0')} UHR</text>`;
+    }
+  }
+
+  // ─── Y-axis: 3 grid lines (min, avg, max) — clean & minimal
+  const yMarks = [
+    { p: minP, label: minP.toFixed(1), cls: '' },
+    { p: avg, label: avg.toFixed(1), cls: 'major' },
+    { p: maxP, label: maxP.toFixed(1), cls: '' },
+  ];
+  yMarks.forEach(m => {
+    const y = yFor(m.p);
+    svgHTML += `<line class="grid-line ${m.cls}" x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}"/>`;
+    svgHTML += `<text class="axis-label y" x="${padL - 8}" y="${(y + 3.5).toFixed(1)}" text-anchor="end">${m.label}</text>`;
+  });
+
+  // ─── Avg reference line (no separate q33/q67 — line gradient handles that)
+  const avgY = yFor(avg);
+  svgHTML += `<line class="ref-line avg" x1="${padL}" y1="${avgY.toFixed(1)}" x2="${W - padR}" y2="${avgY.toFixed(1)}"/>`;
+  svgHTML += `<text class="ref-label avg" x="${W - padR - 4}" y="${(avgY - 4).toFixed(1)}" text-anchor="end">⌀ ${avg.toFixed(1)}</text>`;
+
+  // ─── Area fill (color gradient · alpha mask for vertical fade)
+  if (fillPath) {
+    svgHTML += `<g mask="url(#${gradFill}-mask)">
+      <path d="${fillPath}" fill="url(#${gradFill}-color)"/>
+    </g>`;
+  }
+
+  // ─── Soft glow underneath line for premium depth
+  if (linePath) {
+    svgHTML += `<path class="price-line-glow" d="${linePath}" stroke="url(#${grad})"/>`;
+    // Main line with subtle entrance animation
+    svgHTML += `<path class="price-line price-line-anim" d="${linePath}" stroke="url(#${grad})"/>`;
+  }
+
+  // ─── Subtle data dots at each hour
+  points.forEach((pt, i) => {
+    const color = priceToColor(pt.p, minP, maxP);
+    const delay = (i / points.length * 1.4 + 0.4).toFixed(2);
+    svgHTML += `<circle class="data-dot data-dot-anim" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="${color}" style="animation-delay:${delay}s"/>`;
+  });
+
+  // ─── Min/Max Annotationen (Pills mit Leader-Lines am höchsten/tiefsten Punkt)
+  const minIdx = hourly.findIndex(p => p === minP);
+  const maxIdx = hourly.findIndex(p => p === maxP);
+  function drawAnno(idx, label, value, type) {
+    if (idx < 0 || hourly[idx] == null) return '';
+    const px = xFor(idx);
+    const py = yFor(hourly[idx]);
+    // Pill placement: max above the point, min below
+    const above = type === 'max';
+    const dy = above ? -28 : 28;
+    const py2 = py + dy;
+    const labelStr = `${label} ${value.toFixed(1)}`;
+    const pillW = labelStr.length * 6.2 + 14;
+    const pillH = 17;
+    let html = '';
+    // Leader (dashed connector)
+    html += `<line class="anno-leader ${type}" x1="${px.toFixed(1)}" y1="${py.toFixed(1)}" x2="${px.toFixed(1)}" y2="${py2.toFixed(1)}"/>`;
+    // Target dot
+    html += `<circle class="anno-target ${type}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5"/>`;
+    // Pill
+    html += `<g class="anno-pill">
+      <rect class="anno-pill-bg ${type}" x="${(px - pillW/2).toFixed(1)}" y="${(py2 - pillH/2).toFixed(1)}" width="${pillW}" height="${pillH}" rx="${pillH/2}"/>
+      <text class="anno-pill-text ${type}" x="${px.toFixed(1)}" y="${(py2 + 3.5).toFixed(1)}">${labelStr}</text>
+    </g>`;
+    return html;
+  }
+  // Only show if not too close to chart edges
+  if (minIdx !== maxIdx) {
+    svgHTML += drawAnno(minIdx, '⬇', minP, 'min');
+    svgHTML += drawAnno(maxIdx, '⬆', maxP, 'max');
+  }
+
+  // ─── Now indicator (Sub-Stunden-Genauigkeit, JETZT folgt der Minute)
+  if (currentHour >= 0 && currentHour < 24 && hourly[currentHour] != null) {
+    const now = new Date();
+    const fracHour = currentHour + (now.getMinutes() / 60);
+    const fracClamped = Math.min(23, fracHour);
+    // Y zwischen aktueller und nächster Stunde linear interpolieren (für sanften Verlauf)
+    const h0 = Math.floor(fracClamped);
+    const h1 = Math.min(23, h0 + 1);
+    const f = fracClamped - h0;
+    const p0 = hourly[h0];
+    const p1 = hourly[h1] != null ? hourly[h1] : p0;
+    const interpP = p0 + (p1 - p0) * f;
+    const nx = xFor(fracClamped);
+    const ny = yFor(interpP);
+    const nowColor = priceToColor(interpP, minP, maxP);
+
+    svgHTML += `<line class="now-line" x1="${nx.toFixed(1)}" y1="${(padT+4).toFixed(1)}" x2="${nx.toFixed(1)}" y2="${baselineY.toFixed(1)}"/>`;
+    // animierter Pulse-Ring
+    svgHTML += `<circle class="now-dot-outer" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="10" fill="${nowColor}"/>`;
+    // Hauptpunkt
+    svgHTML += `<circle class="now-dot" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="7" fill="${nowColor}"/>`;
+    // Pille mit Live-Zeit
+    const liveTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const pillText = `${liveTime} · JETZT`;
+    const pillW = pillText.length * 5.8 + 14, pillH = 19, pillY = padT - 8;
+    // Pill so positionieren, dass sie nicht über den Chart-Rand rausragt
+    let pillX = nx - pillW/2;
+    if (pillX < padL) pillX = padL;
+    if (pillX + pillW > W - padR) pillX = W - padR - pillW;
+    svgHTML += `<rect class="now-pill" x="${pillX.toFixed(1)}" y="${(pillY-pillH).toFixed(1)}" width="${pillW}" height="${pillH}" rx="${pillH/2}"/>`;
+    svgHTML += `<text class="now-pill-text" x="${(pillX + pillW/2).toFixed(1)}" y="${(pillY-pillH/2+3.5).toFixed(1)}">${pillText}</text>`;
+  }
+
+  // ─── X axis: hour labels every 3 hours
+  for (let h = 0; h <= 24; h += 3) {
+    const x = xFor(Math.min(h, 23));
+    const realH = h % 24;
+    svgHTML += `<text class="axis-label" x="${x.toFixed(1)}" y="${(H - 12).toFixed(1)}" text-anchor="middle">${String(realH).padStart(2,'0')}</text>`;
+  }
+
+  // ─── Hover overlays
+  svgHTML += `<line class="hover-line" id="${svgId}-hLine" x1="0" y1="${padT}" x2="0" y2="${baselineY}"/>`;
+  svgHTML += `<circle class="hover-dot" id="${svgId}-hDot" cx="0" cy="0"/>`;
+
+  // ─── Invisible hot zones for hover detection
+  const colW = innerW / 24;
+  for (let h = 0; h < 24; h++) {
+    const x = padL + h * colW;
+    svgHTML += `<rect class="hot-zone" x="${x.toFixed(1)}" y="${padT}" width="${colW.toFixed(1)}" height="${innerH}" data-h="${h}"/>`;
+  }
+
+  svg.innerHTML = svgHTML;
+
+  // ─── Hover handlers
+  const hLine = document.getElementById(`${svgId}-hLine`);
+  const hDot = document.getElementById(`${svgId}-hDot`);
+  svg.querySelectorAll('.hot-zone').forEach(z => {
+    const h = parseInt(z.getAttribute('data-h'), 10);
+    z.addEventListener('mouseenter', () => {
+      const p = hourly[h];
+      if (p == null) { tip.style.opacity = 0; hLine.style.opacity = 0; hDot.style.opacity = 0; return; }
+      const cx = xFor(h);
+      const cy = yFor(p);
+      hLine.setAttribute('x1', cx);
+      hLine.setAttribute('x2', cx);
+      hLine.style.opacity = 1;
+      hDot.setAttribute('cx', cx);
+      hDot.setAttribute('cy', cy);
+      hDot.setAttribute('fill', priceToColor(p, minP, maxP));
+      hDot.style.opacity = 1;
+
+      // tooltip absolute pos relative to wrap (in CSS pixels)
+      const svgRect = svg.getBoundingClientRect();
+      const wrapRect = svg.parentElement.getBoundingClientRect();
+      const tipX = svgRect.left - wrapRect.left + (cx / W) * svgRect.width;
+      const tipY = svgRect.top - wrapRect.top + (cy / H) * svgRect.height;
+      tip.style.left = tipX + 'px';
+      tip.style.top = tipY + 'px';
+
+      const spotRp = spotArr[h];
+      const ek = toEndkunde(spotRp);
+      tip.innerHTML = `
+        <div class="line-tooltip-time">${String(h).padStart(2,'0')}:00 – ${String((h+1)%24).padStart(2,'0')}:00</div>
+        <div class="line-tooltip-price">${fmtRp(state.mode === 'spot' ? spotRp : ek)} Rp/kWh</div>
+        <div class="line-tooltip-sub">${state.mode === 'spot' ? 'Endkunde: ' + fmtRp(ek) : 'Spot: ' + fmtRp(spotRp)} Rp/kWh</div>`;
+      tip.style.opacity = 1;
+    });
+    z.addEventListener('mouseleave', () => {
+      tip.style.opacity = 0;
+      hLine.style.opacity = 0;
+      hDot.style.opacity = 0;
+    });
+  });
+}
+
+function renderChart(barsId, axisId, hourly, currentHour) {
+  const bars = document.getElementById(barsId);
+  const axis = document.getElementById(axisId);
+  bars.innerHTML = '';
+  axis.innerHTML = '';
+
+  const valid = hourly.filter(p => p != null);
+  if (valid.length === 0) {
+    bars.style.display = 'none';
+    axis.style.display = 'none';
+    return;
+  }
+  bars.style.display = 'grid';
+  axis.style.display = 'grid';
+
+  const sorted = [...valid].sort((a, b) => a - b);
+  const q33 = quantile(sorted, 0.33);
+  const q67 = quantile(sorted, 0.67);
+  const maxAbs = Math.max(...sorted.map(Math.abs)) * 1.05;
+
+  for (let h = 0; h < 24; h++) {
+    const p = hourly[h];
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-wrap';
+
+    const bar = document.createElement('div');
+    if (p == null || isNaN(p)) {
+      bar.className = 'bar';
+      bar.style.background = 'rgba(0,0,0,0.06)';
+      bar.style.height = '4px';
+    } else {
+      bar.className = 'bar ' + classify(p, q33, q67);
+      bar.style.height = Math.max(2, (Math.abs(p) / maxAbs) * 100) + '%';
+      if (h === currentHour) {
+        bar.classList.add('now');
+        const marker = document.createElement('div');
+        marker.className = 'bar-now-marker';
+        marker.textContent = 'JETZT';
+        wrap.appendChild(marker);
+      }
+    }
+    wrap.appendChild(bar);
+
+    if (p != null) {
+      const tip = document.createElement('div');
+      tip.className = 'tooltip';
+      const spotRp = state.todaySpot[h] != null && barsId === 'todayBars' ? state.todaySpot[h]
+                   : state.tomorrowSpot[h] != null && barsId === 'tomorrowBars' ? state.tomorrowSpot[h]
+                   : null;
+      const ek = toEndkunde(spotRp);
+      tip.innerHTML = `
+        <div class="tooltip-time">${String(h).padStart(2,'0')}:00 – ${String((h+1)%24).padStart(2,'0')}:00</div>
+        <div class="tooltip-price">${fmtRp(state.mode === 'spot' ? spotRp : ek)} Rp/kWh</div>
+        <div class="tooltip-sub">${state.mode === 'spot' ? 'Endkunde: ' + fmtRp(ek) : 'Spot: ' + fmtRp(spotRp)} Rp/kWh</div>
+      `;
+      wrap.appendChild(tip);
+    }
+
+    bars.appendChild(wrap);
+
+    const lab = document.createElement('div');
+    lab.textContent = (h % 3 === 0) ? String(h).padStart(2,'0') : '';
+    axis.appendChild(lab);
+  }
+}
+
+function renderInsights() {
+  const today = state.todaySpot;
+  const indexed = today
+    .map((p, h) => ({ h, p, disp: getDisplayPrice(p) }))
+    .filter(x => x.p != null);
+
+  if (indexed.length === 0) {
+    document.getElementById('cheapest').innerHTML = '<li style="background:transparent; color:var(--text-3);"><span>Keine Daten</span><span></span></li>';
+    document.getElementById('expensive').innerHTML = '<li style="background:transparent; color:var(--text-3);"><span>Keine Daten</span><span></span></li>';
+    return { cheap: [], exp: [] };
+  }
+
+  const cheap = [...indexed].sort((a, b) => a.disp - b.disp).slice(0, 3);
+  const exp = [...indexed].sort((a, b) => b.disp - a.disp).slice(0, 3);
+
+  const fmt = (x) => `<li>
+    <span class="insight-time">${String(x.h).padStart(2,'0')}:00 – ${String((x.h+1)%24).padStart(2,'0')}:00</span>
+    <span style="text-align:right;">
+      <span class="insight-price">${fmtRp(x.disp)} Rp/kWh</span>
+      <div class="insight-price-spot">Spot ${fmtRp(x.p)} · ${state.mode === 'spot' ? 'EK ' + fmtRp(toEndkunde(x.p)) : 'EK'}</div>
+    </span>
+  </li>`;
+
+  document.getElementById('cheapest').innerHTML = cheap.map(fmt).join('');
+  document.getElementById('expensive').innerHTML = exp.map(fmt).join('');
+  return { cheap, exp };
+}
+
+function renderHero() {
+  const now = new Date();
+  const h = now.getHours();
+  const spotNow = state.todaySpot[h];
+  const ekNow = toEndkunde(spotNow);
+  const display = state.mode === 'spot' ? spotNow : ekNow;
+
+  document.getElementById('heroPrice').textContent = fmtRp(display);
+  document.getElementById('heroHour').textContent = `${String(h).padStart(2,'0')}:00`;
+  document.getElementById('heroDay').textContent = now.toLocaleDateString('de-CH', { weekday: 'long' });
+
+  const breakdown = document.getElementById('heroBreakdown');
+  if (spotNow == null) {
+    breakdown.innerHTML = '<span style="opacity:0.7;">Keine Daten verfügbar</span>';
+  } else {
+    const netzMwst = state.netz * MWST;
+    const abgMwst = state.abgaben * MWST;
+    const spotMwst = spotNow * MWST;
+    breakdown.innerHTML = state.mode === 'spot'
+      ? `<span><strong>${fmtRp(spotNow)}</strong> Rp/kWh Börse</span>
+         <span>+ Netz <strong>${fmtRp(state.netz)}</strong></span>
+         <span>+ Abgaben <strong>${fmtRp(state.abgaben)}</strong></span>
+         <span>+ MwSt 8.1 %</span>
+         <span>= <strong>${fmtRp(ekNow)}</strong> Rp/kWh Endkunde</span>`
+      : `<span>Spot <strong>${fmtRp(spotMwst)}</strong></span>
+         <span>+ Netz <strong>${fmtRp(netzMwst)}</strong></span>
+         <span>+ Abgaben <strong>${fmtRp(abgMwst)}</strong></span>
+         <span style="opacity:0.85;">(inkl. MwSt 8.1 %)</span>`;
+  }
+}
+
+function renderStats() {
+  const valid = state.todaySpot.filter(p => p != null);
+  if (valid.length === 0) {
+    ['statNow', 'statMin', 'statMax', 'statAvg'].forEach(id => document.getElementById(id).textContent = '—');
+    ['statNowSub','statMinSub','statMaxSub','statAvgSub'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  const sorted = [...valid].sort((a, b) => a - b);
+  const minSpot = sorted[0], maxSpot = sorted[sorted.length-1];
+  const avgSpot = valid.reduce((a,b)=>a+b,0) / valid.length;
+  const h = new Date().getHours();
+  const nowSpot = state.todaySpot[h];
+
+  const minIdx = state.todaySpot.indexOf(minSpot);
+  const maxIdx = state.todaySpot.indexOf(maxSpot);
+
+  const setStat = (id, subId, spot, suffix) => {
+    const disp = getDisplayPrice(spot);
+    const other = state.mode === 'spot' ? toEndkunde(spot) : spot;
+    document.getElementById(id).innerHTML = `${fmtRp(disp)}<span class="unit"> Rp/kWh</span>`;
+    const otherLabel = state.mode === 'spot' ? 'EK' : 'Spot';
+    document.getElementById(subId).textContent = (suffix ? suffix + ' · ' : '') + `${otherLabel} ${fmtRp(other)}`;
+  };
+
+  setStat('statNow', 'statNowSub', nowSpot, `${String(h).padStart(2,'0')}:00 jetzt`);
+  setStat('statMin', 'statMinSub', minSpot, `um ${String(minIdx).padStart(2,'0')}:00`);
+  setStat('statMax', 'statMaxSub', maxSpot, `um ${String(maxIdx).padStart(2,'0')}:00`);
+  setStat('statAvg', 'statAvgSub', avgSpot, 'Mittelwert');
+}
+
+function renderTalking() {
+  const valid = state.todaySpot.filter(p => p != null);
+  if (valid.length < 4) { document.getElementById('talkingBox').innerHTML = ''; return; }
+  const sorted = [...valid].sort((a, b) => a - b);
+  const min = sorted[0], max = sorted[sorted.length-1];
+  const minDisp = getDisplayPrice(min), maxDisp = getDisplayPrice(max);
+  const spread = maxDisp - minDisp;
+
+  const cheapHours = state.todaySpot
+    .map((p, h) => ({ h, p }))
+    .filter(x => x.p != null)
+    .sort((a,b) => a.p - b.p)
+    .slice(0, 3)
+    .sort((a,b) => a.h - b.h)
+    .map(x => `${String(x.h).padStart(2,'0')}:00`)
+    .join(', ');
+
+  let title, msg;
+  if (spread > 6) {
+    title = '💡 Argument für PV + Speicher / Wärmepumpe';
+    msg = `Die Endkunden-Preisspanne heute beträgt <strong>${fmtRp(spread, 1)} Rp/kWh</strong> (${fmtRp(minDisp,1)} → ${fmtRp(maxDisp,1)}). Wer Wärmepumpe oder Wallbox in den günstigen Stunden um <strong>${cheapHours}</strong> betreibt, spart spürbar gegenüber Hochlastzeiten. Mit PV + Batterie umgehst du die teuren Stunden komplett.`;
+  } else if (spread > 3) {
+    title = '💡 Argument für aktive Steuerung';
+    msg = `Tagesspread heute <strong>${fmtRp(spread, 1)} Rp/kWh</strong>. Mit Smart-Meter und Lastverschiebung in die günstigen Stunden um <strong>${cheapHours}</strong> ist eine Ersparnis möglich – mit PV-Eigenverbrauch deutlich mehr.`;
+  } else {
+    title = '💡 Argument für PV-Eigenverbrauch';
+    msg = `Heute sind die Stundenpreise relativ gleichmässig (Spread nur <strong>${fmtRp(spread, 1)} Rp/kWh</strong>). Der Hebel bleibt der Eigenverbrauch via PV: jede selbst produzierte kWh spart den vollen Endkundenpreis von ø <strong>${fmtRp(getDisplayPrice(valid.reduce((a,b)=>a+b,0)/valid.length),1)} Rp/kWh</strong>.`;
+  }
+  document.getElementById('talkingBox').innerHTML = `
+    <div class="talking">
+      <div class="talking-icon">⚡</div>
+      <div class="talking-content"><strong>${title}</strong>${msg}</div>
+    </div>`;
+}
+
+function applyChartView(target) {
+  const view = state.view[target];
+  const lineWrap = document.getElementById(target + 'LineWrap');
+  const bars = document.getElementById(target + 'Bars');
+  const axis = document.getElementById(target + 'Axis');
+  const valid = (target === 'today' ? state.todaySpot : state.tomorrowSpot).filter(p => p != null);
+  const hasData = valid.length > 0;
+
+  if (!hasData) {
+    if (lineWrap) lineWrap.style.display = 'none';
+    if (bars) bars.style.display = 'none';
+    if (axis) axis.style.display = 'none';
+    return;
+  }
+
+  if (view === 'line') {
+    if (lineWrap) lineWrap.style.display = 'block';
+    if (bars) bars.style.display = 'none';
+    if (axis) axis.style.display = 'none';
+  } else {
+    if (lineWrap) lineWrap.style.display = 'none';
+    if (bars) bars.style.display = 'grid';
+    if (axis) axis.style.display = 'grid';
+  }
+}
+
+function renderTomorrow() {
+  const valid = state.tomorrowSpot.filter(p => p != null);
+  if (valid.length === 0) {
+    const emptyEl = document.getElementById('tomorrowEmpty');
+    emptyEl.style.display = 'block';
+    document.getElementById('tomorrowLineWrap').style.display = 'none';
+    document.getElementById('tomorrowBars').style.display = 'none';
+    document.getElementById('tomorrowAxis').style.display = 'none';
+
+    // Unterscheide: nach 13 Uhr → Fetch-Fehler · vor 13 Uhr → Daten gibt's wirklich noch nicht
+    const ch = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Zurich' }));
+    const hourCH = ch.getHours();
+    const dataShouldExist = hourCH >= 13;
+
+    if (state.tomorrowError || dataShouldExist) {
+      emptyEl.innerHTML = `
+        <div style="color: var(--red); font-weight: 700; margin-bottom: 6px;">⚠️ Daten konnten nicht geladen werden</div>
+        <div style="margin-bottom:10px;">${state.tomorrowError ? '<code style="background:var(--red-bg); padding:1px 6px; border-radius:4px; font-size:11.5px;">' + state.tomorrowError + '</code>' : 'Der CORS-Proxy hat die Anfrage abgelehnt (vermutlich Rate-Limit).'}</div>
+        <button class="reload-btn" onclick="loadAll()" style="margin-top:8px;">↻ Erneut versuchen</button>
+      `;
+      document.getElementById('tomorrowMeta').textContent = 'Fehler beim Laden';
+    } else {
+      emptyEl.innerHTML = `
+        <strong>Preise für morgen werden noch publiziert</strong><br>
+        Die EPEX Spot publiziert die Day-Ahead-Preise täglich gegen 13:00 Uhr CET.<br>
+        <span style="opacity:0.7;">Aktuell ${hourCH}:${String(ch.getMinutes()).padStart(2,'0')} Uhr · ca. ${13 - hourCH} h bis Veröffentlichung.</span>
+      `;
+      document.getElementById('tomorrowMeta').textContent = 'Veröffentlichung ~13:00 CET';
+    }
+    return;
+  }
+  document.getElementById('tomorrowEmpty').style.display = 'none';
+  const disp = getDisplayArr(state.tomorrowSpot);
+  renderChart('tomorrowBars', 'tomorrowAxis', disp, -1);
+  renderLineChart('tomorrowLine', 'tomorrowLineTip', disp, -1, state.tomorrowSpot);
+  applyChartView('tomorrow');
+  const dispValid = disp.filter(p => p != null);
+  const sorted = [...dispValid].sort((a, b) => a - b);
+  document.getElementById('tomorrowMeta').textContent =
+    `Min ${fmtRp(sorted[0],1)} · Max ${fmtRp(sorted[sorted.length-1],1)} · Ø ${fmtRp(dispValid.reduce((a,b)=>a+b,0)/dispValid.length,1)} Rp/kWh`;
+}
+
+function renderAll() {
+  renderHero();
+  renderStats();
+  const now = new Date();
+  const todayDisp = getDisplayArr(state.todaySpot);
+  renderChart('todayBars', 'todayAxis', todayDisp, now.getHours());
+  renderLineChart('todayLine', 'todayLineTip', todayDisp, now.getHours(), state.todaySpot);
+  applyChartView('today');
+  renderInsights();
+  renderTalking();
+  renderTomorrow();
+
+  const validToday = state.todaySpot.filter(p => p != null);
+  if (validToday.length > 0) {
+    const dispToday = getDisplayArr(state.todaySpot).filter(p => p != null);
+    const sorted = [...dispToday].sort((a, b) => a - b);
+    document.getElementById('todayMeta').textContent =
+      `Min ${fmtRp(sorted[0],1)} · Max ${fmtRp(sorted[sorted.length-1],1)} · Ø ${fmtRp(dispToday.reduce((a,b)=>a+b,0)/dispToday.length,1)} Rp/kWh`;
+  }
+}
+
+// =============================================================
+//   PLZ + Versorger
+// =============================================================
+function applyPLZ() {
+  const plz = document.getElementById('plz').value.trim();
+  const subEl = document.getElementById('plzSub');
+  const versEl = document.getElementById('versorger');
+  const netzEl = document.getElementById('netz');
+
+  if (plz.length < 4) {
+    subEl.textContent = "PLZ eingeben für Versorger & Tarif";
+    versEl.innerHTML = '<span style="color: var(--text-3); font-weight: 500;">—</span>';
+    localStorage.removeItem('alpenStromPLZ');
+    return;
+  }
+  const r = lookupPLZ(plz);
+  if (!r) {
+    subEl.innerHTML = '<span style="color: var(--red)">Ungültige Schweizer PLZ</span>';
+    versEl.innerHTML = '<span style="color: var(--text-3); font-weight: 500;">—</span>';
+    return;
+  }
+  subEl.innerHTML = `<strong>${plz}</strong> · ${r.region}`;
+  versEl.innerHTML = `
+    <div style="font-size:14.5px; font-weight:700; line-height:1.3; margin-bottom:3px;">${r.vers}</div>
+    <div style="font-size:11.5px; color: var(--text-2); font-weight:500;">Kanton ${r.kt}</div>
+  `;
+  // Netz-Default automatisch setzen, wenn User nichts manuell gesetzt hat
+  if (!netzEl.dataset.userSet) {
+    netzEl.value = r.netz.toFixed(1);
+    state.netz = r.netz;
+    renderAll();
+  }
+  localStorage.setItem('alpenStromPLZ', plz);
+}
+
+// =============================================================
+//   Live clock
+// =============================================================
+function tickClock() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent =
+    now.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// Auto-rerender: full app on hour change, line chart only on minute change (für JETZT-Pille)
+let lastHour = new Date().getHours();
+let lastMinute = new Date().getMinutes();
+setInterval(() => {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  if (h !== lastHour) {
+    lastHour = h; lastMinute = m;
+    renderAll();
+  } else if (m !== lastMinute) {
+    lastMinute = m;
+    // Only re-render line chart for live time indicator
+    const todayDisp = getDisplayArr(state.todaySpot);
+    renderLineChart('todayLine', 'todayLineTip', todayDisp, h, state.todaySpot);
+  }
+}, 15 * 1000);
+
+// ResizeObserver: rendert Linien-Chart neu, sobald sich die SVG-Größe ändert
+// (zuverlässiger als window.resize — fängt auch Layout-Settling beim ersten Load)
+let resizeTimer;
+function reRenderLines() {
+  const now = new Date();
+  renderLineChart('todayLine', 'todayLineTip', getDisplayArr(state.todaySpot), now.getHours(), state.todaySpot);
+  renderLineChart('tomorrowLine', 'tomorrowLineTip', getDisplayArr(state.tomorrowSpot), -1, state.tomorrowSpot);
+}
+function scheduleReRender() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(reRenderLines, 120);
+}
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(scheduleReRender);
+  ['todayLine', 'tomorrowLine'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) ro.observe(el);
+  });
+}
+window.addEventListener('resize', scheduleReRender);
+// Beim Initial-Load nach Layout-Settling auch nochmal neu zeichnen
+window.addEventListener('load', () => requestAnimationFrame(reRenderLines));
+
+// =============================================================
+//   Event listeners
+// =============================================================
+document.getElementById('plz').addEventListener('input', applyPLZ);
+document.getElementById('netz').addEventListener('input', (e) => {
+  e.target.dataset.userSet = '1';
+  state.netz = parseFloat(e.target.value) || 0;
+  renderAll();
+});
+document.getElementById('abgaben').addEventListener('input', (e) => {
+  state.abgaben = parseFloat(e.target.value) || 0;
+  renderAll();
+});
+document.querySelectorAll('#viewToggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#viewToggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.mode = b.dataset.mode;
+    renderAll();
+  });
+});
+
+// Chart view toggle (Linie / Balken) per Sektion
+document.querySelectorAll('.chart-tabs').forEach(tabs => {
+  const target = tabs.dataset.target;
+  tabs.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.view[target] = btn.dataset.view;
+      applyChartView(target);
+    });
+  });
+});
+
+// Restore PLZ
+const savedPLZ = localStorage.getItem('alpenStromPLZ');
+if (savedPLZ) {
+  document.getElementById('plz').value = savedPLZ;
+  applyPLZ();
+}
+
+// =============================================================
+//   Load
+// =============================================================
+function showError(msg) {
+  document.getElementById('errorBox').innerHTML = `<div class="error">⚠️ ${msg}</div>`;
+}
+function clearError() { document.getElementById('errorBox').innerHTML = ''; }
+
+async function loadAll() {
+  clearError();
+  const now = new Date();
+  const today = new Date(now);
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+
+  document.getElementById('todayDate').textContent = fmtDate(today);
+  document.getElementById('tomorrowDate').textContent = fmtDate(tomorrow);
+
+  state.fx = await fetchFX();
+
+  state.todaySpot = new Array(24).fill(null);
+  try {
+    const data = await fetchPrices(isoDate(today));
+    if (data?.unix_seconds && data?.price) {
+      data.unix_seconds.forEach((ts, i) => {
+        const d = new Date(ts * 1000);
+        if (d.toDateString() === today.toDateString()) {
+          state.todaySpot[d.getHours()] = (data.price[i] * state.fx) / 10;
+        }
+      });
+    }
+  } catch (e) {
+    showError(`Strompreis-API nicht erreichbar: ${e.message}. Prüfe Internetverbindung oder Proxy-Status.`);
+  }
+
+  state.tomorrowSpot = new Array(24).fill(null);
+  state.tomorrowError = null;
+  try {
+    const data = await fetchPrices(isoDate(tomorrow));
+    if (data?.unix_seconds && data?.price) {
+      data.unix_seconds.forEach((ts, i) => {
+        const d = new Date(ts * 1000);
+        if (d.toDateString() === tomorrow.toDateString()) {
+          state.tomorrowSpot[d.getHours()] = (data.price[i] * state.fx) / 10;
+        }
+      });
+    }
+  } catch (e) {
+    state.tomorrowError = e?.message || 'Fetch fehlgeschlagen';
+  }
+
+  renderAll();
+}
+
+loadAll();
+setInterval(loadAll, 5 * 60 * 1000);
+
+</script>
+</body>
+</html>
