@@ -1,12 +1,14 @@
 // Netlify Function: server-side proxy für EPEX Spot CH Preise
-// Mit Edge-Caching: API wird max alle 10 Min angefragt, restliche Requests aus Cache
+// Unterstützt jetzt auch tres-Parameter (hour/quarter) für 15-Min-Auflösung
+// Mit In-Memory + Edge-Cache
 
 const memCache = new Map();
-const TTL_MS = 10 * 60 * 1000; // 10 Min
+const TTL_MS = 10 * 60 * 1000;
 
 export default async (req) => {
   const url = new URL(req.url);
   const date = url.searchParams.get("date");
+  const tres = url.searchParams.get("tres");
 
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return new Response(JSON.stringify({ error: "missing or invalid date (YYYY-MM-DD)" }), {
@@ -15,7 +17,8 @@ export default async (req) => {
     });
   }
 
-  const cached = memCache.get(date);
+  const cacheKey = date + "::" + (tres || "default");
+  const cached = memCache.get(cacheKey);
   if (cached && Date.now() - cached.ts < TTL_MS) {
     return new Response(cached.body, {
       status: cached.status,
@@ -24,14 +27,20 @@ export default async (req) => {
   }
 
   try {
-    const apiUrl = `https://api.energy-charts.info/price?bzn=CH&start=${date}&end=${date}`;
+    const params = new URLSearchParams({
+      bzn: "CH",
+      start: date,
+      end: date,
+    });
+    if (tres) params.set("tres", tres);
+    const apiUrl = "https://api.energy-charts.info/price?" + params.toString();
     const r = await fetch(apiUrl, {
       headers: { "User-Agent": "AlpenEnergie-StrompreisMonitor/1.0 (+enura-group.com)" },
     });
     const body = await r.text();
 
     if (r.status === 200 && body.startsWith("{")) {
-      memCache.set(date, { body, status: 200, ts: Date.now() });
+      memCache.set(cacheKey, { body, status: 200, ts: Date.now() });
     }
 
     return new Response(body, {
@@ -44,7 +53,7 @@ export default async (req) => {
       },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: e?.message || "fetch failed" }), {
+    return new Response(JSON.stringify({ error: (e && e.message) || "fetch failed" }), {
       status: 502,
       headers: corsJsonHeaders(),
     });
